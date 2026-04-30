@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+</head>
+<body>
+
+  <div class="top-app-bar d-md-none">
+    <h5 class="m-0 fw-bold"><i class="fas fa-school text-primary"></i> បស.ព្រះរាជអគ្គមហេសី</h5>
+    <span id="mobileRoleBadge" class="badge bg-primary rounded-pill">...</span>
+  </div>
+
+  <div class="sidebar d-none d-md-block">
+    <h4><i class="fas fa-school text-primary"></i> បស.ព្រះរាជអគ្គមហេសី</h4>
+    <div class="nav-link active" onclick="switchView('dashboardView')" data-target="dashboardView"><i class="fas fa-chart-pie"></i> ផ្ទាំងទូទៅ</div>
+    <div class="nav-link" id="navStudentManageDesktop" onclick="switchView('studentManageView')" data-target="studentManageView"><i class="fas fa-users-cog text-info"></i> គ្រប់គ្រងសិស្ស</div> 
+    <div class="nav-link" onclick="switchView('studentDetailView')" data-target="studentDetailView"><i class="fas fa-user-graduate"></i> ព័ត៌មានសិស្ស</div>
+    <div class="nav-link" id="navDebtorDesktop" onclick="switchView('debtorView')" data-target="debtorView"><i class="fas fa-user-clock text-warning"></i> អ្នកជំពាក់</div>
+    <div class="nav-link" id="navPaymentDesktop" onclick="switchView('paymentView')" data-target="paymentView"><i class="fas fa-file-invoice-dollar"></i> បញ្ចូលបង់ប្រាក់</div>
+    <div class="nav-link" id="navExpenseDesktop" onclick="switchView('expenseView')" data-target="expenseView"><i class="fas fa-file-invoice text-danger"></i> បញ្ចូលចំណាយ</div>
+    <div class="nav-link" onclick="switchView('reportView')" data-target="reportView"><i class="fas fa-file-alt"></i> របាយការណ៍</div>
+  </div>
+
+  <div class="main-content">
+    
+    <div id="dashboardView" class="app-view active">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0 text-dark">ទិដ្ឋភាពទូទៅ</h4>
+        <button id="btnRefreshDash" class="btn btn-light border text-primary shadow-sm" onclick="loadDashboard()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4"><div class="stat-box bg-primary shadow-sm"><h4>ចំណូលសរុប (Income)</h4><h2 id="d-totalInc">0 ៛</h2><i class="fas fa-wallet"></i></div></div>
+        <div class="col-12 col-md-4"><div class="stat-box bg-danger shadow-sm"><h4>ចំណាយសរុប (Expense)</h4><h2 id="d-totalExp">0 ៛</h2><i class="fas fa-hand-holding-usd"></i></div></div>
+        <div class="col-12 col-md-4"><div class="stat-box bg-success shadow-sm"><h4>ប្រាក់នៅសល់ (Net Balance)</h4><h2 id="d-netBalance">0 ៛</h2><i class="fas fa-piggy-bank"></i></div></div>
+      </div>
+      <div class="row g-3">
+        <div class="col-12 col-md-8"><div class="custom-card h-100"><h6 class="fw-bold text-primary mb-3"><i class="fas fa-chart-line"></i> ក្រាហ្វិកប្រភេទទូទាត់</h6><div style="position: relative; height:250px; width:100%"><canvas id="incomeChart"></canvas></div></div></div>
+        <div class="col-12 col-md-4">
+            <div class="row g-2">
+                <div class="col-6"><div class="stat-box py-3" style="background:#0ea5e9;"><h4>សិស្សសរុប</h4><h2 id="d-totStu">0</h2></div></div>
+                <div class="col-6"><div class="stat-box py-3" style="background:#ec4899;"><h4>សិស្សស្រី</h4><h2 id="d-femStu">0</h2></div></div>
+                <div class="col-6"><div class="stat-box py-3" style="background:#14b8a6;"><h4>ទូទាត់រួច</h4><h2 id="d-full">0</h2></div></div>
+                <div class="col-6"><div class="stat-box py-3" style="background:#f59e0b;"><h4>បញ្ចុះតម្លៃ</h4><h2 id="d-disc">0</h2></div></div>
+                <div class="col-6"><div class="stat-box py-3" style="background:#ef4444;"><h4>សិស្សក្រីក្រ</h4><h2 id="d-poor">0</h2></div></div>
+                <div class="col-6"><div class="stat-box py-3" style="background:#64748b;"><h4>លើកលែង</h4><h2 id="d-exem">0</h2></div></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="studentManageView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark"><i class="fas fa-users-cog text-info"></i> គ្រប់គ្រងទិន្នន័យសិស្ស</h4>
+      <div class="custom-card mb-4 border-info" style="border-top: 4px solid #0dcaf0;">
+        <form id="studentManageForm">
+          <input type="hidden" id="oldStuId" name="oldStuId">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-bold">អត្តលេខ (ID) <span class="text-danger">*</span></label>
+              <input type="text" id="stuId" name="stuId" class="form-control border-info fw-bold" required placeholder="ឧ. AKK-001">
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-bold">ឈ្មោះសិស្ស <span class="text-danger">*</span></label>
+              <input type="text" id="stuName" name="stuName" class="form-control" required placeholder="ឈ្មោះពេញ...">
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label fw-bold">ថ្នាក់រៀន <span class="text-danger">*</span></label>
+              <select id="stuClass" name="stuClass" class="form-select" required></select>
+            </div>
+            <div class="col-12 col-md-2">
+              <label class="form-label fw-bold">លេខទូរស័ព្ទ</label>
+              <input type="text" id="stuPhone" name="stuPhone" class="form-control" placeholder="012345678">
+            </div>
+            <div class="col-12 col-md-2 d-flex gap-2">
+               <button type="button" class="btn btn-light border shadow-sm" onclick="resetStudentForm()"><i class="fas fa-redo"></i></button>
+               <button type="submit" id="btnSaveStudent" class="btn btn-info text-white shadow-sm flex-grow-1 fw-bold"><i class="fas fa-save"></i> រក្សាទុក</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="custom-card p-0 overflow-hidden">
+        <div class="p-3 bg-light border-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <h6 class="m-0 fw-bold"><i class="fas fa-list text-primary"></i> បញ្ជីសិស្សសរុប: <span id="totalManageStudents" class="badge bg-primary fs-6">0</span></h6>
+            <div class="input-group" style="max-width: 300px;"><span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span><input type="text" id="searchManageStudent" class="form-control" placeholder="ស្វែងរកតាម ID ឬ ឈ្មោះ..." onkeyup="filterManageStudents()"></div>
+        </div>
+        <div class="table-wrapper" style="max-height: 450px; overflow-y: auto;">
+          <table class="table table-hover" id="manageStudentTable">
+            <thead style="position: sticky; top: 0; z-index: 1; background: #f8fafc;"><tr><th>អត្តលេខ (ID)</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់រៀន</th><th>លេខទូរស័ព្ទ</th><th class="text-center">សកម្មភាព</th></tr></thead>
+            <tbody id="manageStudentTableBody"><tr><td colspan="5" class="text-center py-4 text-muted">សូមរង់ចាំ...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="studentDetailView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark">ព័ត៌មានលម្អិតសិស្ស</h4>
+      <div class="custom-card mb-4">
+        <div class="row g-3">
+          <div class="col-12 col-md-5">
+            <label class="form-label text-primary fw-bold">ស្វែងរកអត្តលេខសិស្ស (ID)</label>
+            <div class="input-group"><input type="text" id="detailSearchId" class="form-control border-primary" placeholder="ឧ. AKK-001..."><button class="btn btn-primary" onclick="searchStudentDetails()"><i class="fas fa-search"></i> ស្វែងរក</button></div>
+          </div>
+        </div>
+      </div>
+      <div id="studentProfileArea" style="display: none;">
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-4">
+            <div class="custom-card h-100 d-flex flex-column align-items-center justify-content-center text-center">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 80px; height: 80px; font-size: 30px;"><i class="fas fa-user-graduate"></i></div>
+              <h4 id="detName" class="fw-bold text-dark mb-1">ឈ្មោះសិស្ស</h4><span id="detId" class="badge bg-secondary mb-3">ID: ---</span>
+              <div class="w-100 text-start px-3 pt-3 border-top"><p class="mb-2"><i class="fas fa-chalkboard-teacher text-primary me-2"></i> ថ្នាក់រៀន: <strong id="detClass">---</strong></p><p class="mb-1"><i class="fas fa-phone-alt text-primary me-2"></i> ទូរស័ព្ទ: <strong id="detPhone">---</strong></p></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-8">
+            <div class="row g-3"><div class="col-12 col-md-6"><div class="stat-box bg-total py-3"><h4>សរុបប្រាក់បានបង់</h4><h2 id="detTotalPaid">0 ៛</h2></div></div><div class="col-12 col-md-6"><div class="stat-box bg-wait py-3"><h4>ប្រាក់នៅជំពាក់ចុងក្រោយ</h4><h2 id="detBalance">0 ៛</h2></div></div></div>
+            <div class="custom-card mt-3 p-3">
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-history"></i> ប្រវត្តិបង់ប្រាក់</h6>
+                <div class="table-wrapper" style="max-height: 250px; overflow-y: auto;">
+                  <table class="table table-hover table-sm">
+                    <thead><tr><th>ថ្ងៃខែ</th><th>វិក្កយបត្រ</th><th>ឆមាស</th><th>ប្រភេទ</th><th>ចំនួនប្រាក់</th><th>សកម្មភាព</th></tr></thead>
+                    <tbody id="detTableBody"></tbody>
+                  </table>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="debtorView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark"><i class="fas fa-user-clock text-warning"></i> បញ្ជីអ្នកជំពាក់ប្រាក់</h4>
+      <div class="custom-card mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-6 col-md-2"><label class="form-label">ឆ្នាំសិក្សា</label><input type="text" id="debtorYear" class="form-control" value="2025-2026"></div>
+          <div class="col-6 col-md-2"><label class="form-label">ឆមាស</label><select id="debtorSem" class="form-select"><option value="ឆមាសទី១">ឆមាសទី១</option><option value="ឆមាសទី២">ឆមាសទី២</option></select></div>
+          <div class="col-12 col-md-2"><label class="form-label">ចម្រាញ់ថ្នាក់</label><select id="debtorClassFilter" class="form-select"></select></div>
+          <div class="col-12 col-md-3"><label class="form-label">ស្វែងរក (ID ឬ ឈ្មោះ)</label><input type="text" id="debtorSearch" class="form-control" placeholder="វាយបញ្ចូលទីនេះ..."></div>
+          <div class="col-12 col-md-3 d-flex gap-2">
+            <button class="btn btn-warning text-dark fw-bold flex-grow-1" onclick="generateDebtorReport()"><i class="fas fa-search"></i> ទាញទិន្នន័យ</button>
+            <button class="btn btn-outline-success" onclick="exportDebtorsToExcel()" title="ទាញយកជា Excel"><i class="fas fa-file-excel"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="custom-card p-0 overflow-hidden">
+        <div class="table-wrapper">
+          <table id="debtorTable" class="table table-hover">
+            <thead><tr class="table-warning"><th>ID សិស្ស</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់</th><th>លេខទូរស័ព្ទ</th><th>តម្លៃពេញ</th><th>បានបង់</th><th class="text-danger">ជំពាក់</th><th class="action-column text-center">សកម្មភាព</th></tr></thead>
+            <tbody id="debtorTableBody"><tr><td colspan="8" class="text-center text-muted py-4">សូមចុចប៊ូតុង "ទាញទិន្នន័យ"</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="expenseView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark"><i class="fas fa-file-invoice text-danger"></i> ទម្រង់កត់ត្រាចំណាយ</h4>
+      <div class="custom-card border-danger" style="border-top: 4px solid #ef4444;">
+        <form id="expenseForm">
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4"><label class="form-label text-danger fw-bold">ប្រភេទចំណាយ</label><select name="expCategory" class="form-select border-danger" required><option>ប្រាក់ខែគ្រូបង្រៀន</option><option>សម្ភារៈសាលា និងរដ្ឋបាល</option><option>ថ្លៃទឹកភ្លើង និងអ៊ីនធឺណិត</option><option>ជួសជុល និងថែទាំ</option><option>ចំណាយផ្សេងៗ</option></select></div>
+            <div class="col-12 col-md-8"><label class="form-label fw-bold">ការពិពណ៌នាលម្អិត</label><input type="text" name="expDesc" class="form-control" required placeholder="ឧទាហរណ៍៖ ទិញកុំព្យូទ័រថ្មី..."></div>
+            <div class="col-12 col-md-4"><label class="form-label text-danger fw-bold">ចំនួនទឹកប្រាក់ចំណាយ (៛)</label><input type="number" name="expAmount" class="form-control border-danger bg-light" required placeholder="0"></div>
+            <div class="col-6 col-md-4"><label class="form-label">ថ្ងៃខែចំណាយ</label><input type="date" id="expDateInput" name="expDate" class="form-control" required></div>
+            <div class="col-6 col-md-4"><label class="form-label">អ្នកកត់ត្រា</label><input type="text" id="expBy" name="expBy" class="form-control" required></div>
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
+            <button type="reset" class="btn btn-light border"><i class="fas fa-redo"></i> បញ្ចូលថ្មី</button>
+            <button type="submit" id="btnSaveExpense" class="btn btn-danger"><i class="fas fa-save"></i> រក្សាទុកចំណាយ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="paymentView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark">ទម្រង់បង់ប្រាក់</h4>
+      <div class="custom-card border-primary" style="border-top: 4px solid #2563eb;">
+        <form id="payForm">
+          <input type="hidden" id="editInvNo" name="editInvNo"> 
+          <h6 class="fw-bold text-primary mb-3">ព័ត៌មានសិស្ស</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-bold">អត្តលេខ (ID) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" id="studentId" name="studentId" class="form-control border-primary" required placeholder="វាយ ID...">
+                <button class="btn btn-primary" type="button" onclick="fetchStudentForPayment()"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+            <div class="col-12 col-md-3"><label class="form-label">ឈ្មោះសិស្ស</label><input type="text" id="studentName" name="studentName" class="form-control border-info text-dark fw-bold"></div>
+            <div class="col-6 col-md-2"><label class="form-label">ភេទ</label><select name="gender" class="form-select"><option>ប្រុស</option><option>ស្រី</option></select></div>
+            <div class="col-6 col-md-2"><label class="form-label">ថ្នាក់រៀន</label><input type="text" id="className" name="className" class="form-control border-info text-dark fw-bold"></div>
+            <div class="col-12 col-md-2"><label class="form-label">លេខទូរស័ព្ទ</label><input type="text" id="phone" name="phone" class="form-control border-info text-dark fw-bold"></div>
+          </div>
+          <h6 class="fw-bold text-primary mb-3 border-top pt-3">ព័ត៌មានការបង់</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-2"><label class="form-label">ឆ្នាំសិក្សា</label><input type="text" name="academicYear" class="form-control" value="2025-2026" required></div>
+            <div class="col-6 col-md-2"><label class="form-label">ចំណាំ</label><input type="text" id="comment" name="comment" class="form-control" placeholder="លើកទី១"></div>
+            <div class="col-6 col-md-2"><label class="form-label">ឆមាស</label><select name="semester" id="semester" class="form-select"><option>ឆមាសទី១</option><option>ឆមាសទី២</option></select></div>
+            <div class="col-6 col-md-3"><label class="form-label">វិធីសាស្ត្រ</label><select name="payMethod" class="form-select"><option>Cash</option><option>QR Code</option></select></div>
+            <div class="col-12 col-md-3"><label class="form-label">ប្រភេទបង់</label><select name="others" id="othersType" class="form-select"><option>បង់ធម្មតា</option><option>បង់បញ្ចុះតម្លៃ</option><option>សិស្សក្រីក្រ</option><option>លើកលែង</option></select></div>
+          </div>
+          <h6 class="fw-bold text-primary mb-3 border-top pt-3">ការគណនាហិរញ្ញវត្ថុ</h6>
+          <div class="row g-3">
+            <div class="col-6 col-md-3"><label class="form-label text-dark">តម្លៃពេញ (Fee)</label><input type="number" id="schoolFee" name="schoolFee" class="form-control text-dark fw-bold" required placeholder="0"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-info">បង់ពីមុន (Prev)</label><input type="number" id="previousPaid" class="form-control bg-secondary text-info fw-bold" readonly value="0"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-primary">ប្រាក់បង់ (Amount)</label><input type="number" id="amount" name="amount" class="form-control border-primary fw-bold" required placeholder="0"></div>
+            <div class="col-6 col-md-3"><label class="form-label text-danger">បញ្ចុះតម្លៃ</label><input type="number" id="discount" name="discount" class="form-control" value="0"></div>
+            <div class="col-12 col-md-4 mt-3"><label class="form-label text-success">សរុបបានបង់ (Total)</label><input type="number" id="totalPaid" name="totalPaid" class="form-control bg-secondary text-success fw-bold" readonly required></div>
+            <div class="col-6 col-md-4 mt-3"><label class="form-label text-warning">ប្រាក់នៅខ្វះ (Balance)</label><input type="number" id="balance" name="balance" class="form-control bg-secondary text-warning fw-bold" readonly></div>
+            <div class="col-6 col-md-4 mt-3"><label class="form-label">ស្ថានភាព</label><input type="text" id="partialStat" name="partialStat" class="form-control bg-secondary" readonly></div>
+            <div class="col-12 col-md-12 mt-3"><label class="form-label">អ្នកទទួលប្រាក់</label><input type="text" id="collector" name="collector" class="form-control" required></div>
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
+            <button type="button" class="btn btn-light border" onclick="resetPaymentForm()"><i class="fas fa-redo"></i> បញ្ចូលថ្មី</button>
+            <button type="button" id="btnPrintReceiptBtn" class="btn btn-success" onclick="triggerReceiptPrint()" disabled><i class="fas fa-print"></i> ព្រីនវិក្កយបត្រ</button>
+            <button type="submit" id="btnSaveData" class="btn btn-primary"><i class="fas fa-save"></i> រក្សាទុកទិន្នន័យ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="reportView" class="app-view">
+      <h4 class="mb-3 fw-bold text-dark">របាយការណ៍ចំណូល</h4>
+      <div class="custom-card mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-6 col-md-2"><label class="form-label">ប្រភេទ</label><select id="repType" class="form-select" onchange="toggleFilterInput()"><option value="daily">ប្រចាំថ្ងៃ</option><option value="sem1">ឆមាសទី១</option><option value="sem2">ឆមាសទី២</option><option value="yearly">ប្រចាំឆ្នាំ</option><option value="all">ទាំងអស់</option></select></div>
+          <div class="col-6 col-md-2"><label id="filterLabel" class="form-label">ថ្ងៃខែ</label><input type="text" id="repFilter" class="form-control" placeholder="DD/MM/YYYY"></div>
+          <div class="col-12 col-md-2"><label class="form-label">ចម្រាញ់ថ្នាក់</label><select id="classFilter" class="form-select"></select></div>
+          <div class="col-12 col-md-3"><label class="form-label text-primary fw-bold">ស្វែងរក (ID ឬ ឈ្មោះ)</label><input type="text" id="searchStudentReport" class="form-control border-primary" placeholder="វាយបញ្ចូលទីនេះ..."></div>
+          <div class="col-12 col-md-3 d-flex gap-2"><button class="btn btn-primary flex-grow-1" onclick="generateReport()"><i class="fas fa-search"></i> ទាញ</button><button class="btn btn-outline-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i></button><button class="btn btn-outline-secondary" onclick="printReport()"><i class="fas fa-print"></i></button></div>
+        </div>
+      </div>
+      <div id="reportPrintArea" class="custom-card p-0 overflow-hidden">
+        <div class="print-header d-none text-center mb-3"><h4 class="fw-bold">សាលាបឋមសិក្សា បស.ព្រះរាជអគ្គមហេសី</h4><h5 id="printReportTitle" class="text-secondary">របាយការណ៍ចំណូល</h5></div>
+        <div class="table-wrapper">
+          <table id="reportTable" class="table table-hover">
+            <thead><tr><th>វិក្កយបត្រ</th><th>ថ្ងៃខែ</th><th>ឈ្មោះសិស្ស</th><th>ថ្នាក់</th><th>ឆមាស</th><th>ប្រភេទ</th><th>ប្រាក់បង់ (៛)</th><th class="action-column text-center">សកម្មភាព</th></tr></thead>
+            <tbody id="reportTableBody"><tr><td colspan="8" class="text-center text-muted py-4">សូមចុចប៊ូតុង "ទាញទិន្នន័យ"</td></tr></tbody>
+            <tfoot><tr class="table-light"><th colspan="6" class="text-end">សរុបរួម:</th><th id="reportTotalTable" colspan="2" class="text-primary fw-bold fs-5">0 ៛</th></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav d-md-none">
+    <div class="bottom-nav-item active" onclick="switchView('dashboardView')" data-target="dashboardView"><i class="fas fa-chart-pie"></i><span>ទូទៅ</span></div>
+    <div class="bottom-nav-item" id="navStudentManageMobile" onclick="switchView('studentManageView')" data-target="studentManageView"><i class="fas fa-users-cog text-info"></i><span>បញ្ជីសិស្ស</span></div>
+    <div class="bottom-nav-item" id="navDebtorMobile" onclick="switchView('debtorView')" data-target="debtorView"><i class="fas fa-user-clock text-warning"></i><span>ជំពាក់</span></div>
+    <div class="bottom-nav-item" id="navPaymentMobile" onclick="switchView('paymentView')" data-target="paymentView"><i class="fas fa-plus-circle text-primary"></i><span>ចំណូល</span></div>
+    <div class="bottom-nav-item" id="navExpenseMobile" onclick="switchView('expenseView')" data-target="expenseView"><i class="fas fa-minus-circle text-danger"></i><span>ចំណាយ</span></div>
+  </div>
+
+  <div id="printContainer" style="display: none;">
+      <div class="receipt-box"><div class="text-center mb-2"><i class="fas fa-school" style="font-size: 24px; color: #333;"></i><h4 style="font-family: 'Kantumruy Pro', sans-serif; font-weight: bold; margin: 5px 0 2px 0;">បស.ព្រះរាជអគ្គមហេសី</h4><p style="font-size: 11px; margin: 0; color: #555;">វិក្កយបត្របង់ប្រាក់ / OFFICIAL RECEIPT</p></div><div class="line"></div><div style="font-size: 12px; margin-bottom: 8px;"><div style="display: flex; justify-content: space-between;"><span>វិក្កយបត្រ:</span> <span id="r_inv" style="font-weight: 600;"></span></div><div style="display: flex; justify-content: space-between;"><span>ថ្ងៃខែ:</span> <span id="r_date"></span></div><div style="display: flex; justify-content: space-between;"><span>អ្នកទទួល:</span> <span id="r_cashier"></span></div></div><div class="line"></div><div style="font-size: 13px; margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>អត្តលេខ (ID):</span> <span id="r_id" style="font-weight: bold;"></span></div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>ឈ្មោះសិស្ស:</span> <span id="r_name" style="font-weight: bold;"></span></div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>ការបង់ប្រាក់:</span> <span id="r_term"></span></div></div><div class="line" style="border-top: 2px dashed #000;"></div><div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;"><span style="font-size: 14px; font-weight: bold;">ប្រាក់បានបង់:</span><span style="font-size: 18px; font-weight: bold; text-decoration: underline;"><span id="r_total"></span> ៛</span></div><div style="display: flex; justify-content: space-between; font-size: 12px;"><span>ស្ថានភាព:</span> <span id="r_stat" style="font-weight: bold;"></span></div><div class="line"></div><p class="text-center" style="margin-top: 15px; font-size: 11px; color: #555;">សូមអរគុណ!<br>Thank You!</p></div>
+  </div>
+
+  <script>
+    // 1) Replace this with your deployed Google Apps Script Web App URL ending in /exec
+    const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+    // 2) Compatibility layer: keeps your old google.script.run code working on Vercel.
+    //    It converts google.script.run.withSuccessHandler(...).someFunction(a,b)
+    //    into POST requests to Apps Script doPost(e).
+    window.google = window.google || {};
+    window.google.script = window.google.script || {};
+    window.google.script.run = new Proxy({}, {
+      get(_target, prop) {
+        if (prop === "withSuccessHandler") {
+          return function (successHandler) {
+            return new Proxy({ successHandler, failureHandler: null }, runnerHandler);
+          };
+        }
+        if (prop === "withFailureHandler") {
+          return function (failureHandler) {
+            return new Proxy({ successHandler: null, failureHandler }, runnerHandler);
+          };
+        }
+        return (...args) => callAppsScript(prop, args);
+      }
+    });
+
+    const runnerHandler = {
+      get(state, prop) {
+        if (prop === "withSuccessHandler") {
+          return function (successHandler) {
+            state.successHandler = successHandler;
+            return new Proxy(state, runnerHandler);
+          };
+        }
+        if (prop === "withFailureHandler") {
+          return function (failureHandler) {
+            state.failureHandler = failureHandler;
+            return new Proxy(state, runnerHandler);
+          };
+        }
+        return (...args) => callAppsScript(prop, args, state.successHandler, state.failureHandler);
+      }
+    };
+
+    async function callAppsScript(action, args = [], successHandler, failureHandler) {
+      try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
+          throw new Error("Please set APPS_SCRIPT_URL in index.html");
+        }
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          // text/plain avoids CORS preflight problems with Apps Script
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: String(action), args })
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || "Apps Script error");
+        if (typeof successHandler === "function") successHandler(json.data);
+        return json.data;
+      } catch (err) {
+        console.error("Apps Script API error:", err);
+        if (typeof failureHandler === "function") failureHandler(err.message || String(err));
+        else throw err;
+      }
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+    }
+  </script>
+
+  <script>
+    let userRole = 'viewer'; let myChart = null; 
+    let currentUser = 'Guest'; // កត់ត្រាឈ្មោះគណនីបច្ចុប្បន្ន
+
+    window.onload = function() { 
+      buildClassDropdown(); checkLogin(); document.getElementById('expDateInput').valueAsDate = new Date(); 
+    };
+
+    function buildClassDropdown() {
+      const grades = ['១', '២', '៣', '៤', '៥', '៦']; const rooms = ['ក', 'ខ', 'គ', 'ឃ', 'ង', 'ច'];
+      let options = ''; let allOption = '<option value="All">គ្រប់ថ្នាក់</option>';
+      grades.forEach(g => { rooms.forEach(r => { options += `<option value="ទី${g}${r}">ថ្នាក់ទី ${g}${r}</option>`; }); });
+      document.getElementById('stuClass').innerHTML = options; 
+      document.getElementById('classFilter').innerHTML = allOption + options;
+      document.getElementById('debtorClassFilter').innerHTML = allOption + options;
+    }
+
+    // មុខងារ Login ថ្មី (ប្រអប់សុំ Username & Password)
+    function checkLogin() {
+      Swal.fire({
+        title: 'ចូលប្រព័ន្ធ (Login)',
+        html:
+          '<input id="loginUser" class="swal2-input" placeholder="ឈ្មោះគណនី (Username)">' +
+          '<input id="loginPass" type="password" class="swal2-input" placeholder="លេខសម្ងាត់ (Password)">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: '<i class="fas fa-sign-in-alt"></i> ចូលគណនី',
+        cancelButtonText: '<i class="fas fa-eye"></i> ចូលមើល (Viewer)',
+        allowOutsideClick: false,
+        preConfirm: () => {
+          const user = document.getElementById('loginUser').value.trim();
+          const pass = document.getElementById('loginPass').value.trim();
+          if (!user || !pass) { Swal.showValidationMessage('សូមបញ្ចូលឈ្មោះ និងលេខសម្ងាត់'); return false; }
+          return { user: user, pass: pass };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({title: 'កំពុងផ្ទៀងផ្ទាត់...', didOpen: () => Swal.showLoading()});
+          google.script.run.withSuccessHandler(function(res) {
+             if(res.success) {
+                userRole = res.role; 
+                currentUser = res.username;
+                document.getElementById('mobileRoleBadge').innerText = currentUser;
+                document.getElementById('collector').value = currentUser;
+                document.getElementById('expBy').value = currentUser;
+                initApp();
+                Swal.fire({icon: 'success', title: 'ជោគជ័យ', text: 'ស្វាគមន៍ ' + currentUser, timer: 1500, showConfirmButton: false});
+             } else {
+                Swal.fire('បរាជ័យ', res.message, 'error').then(()=> checkLogin());
+             }
+          }).verifyLogin(result.value.user, result.value.pass);
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          userRole = 'viewer'; currentUser = 'Guest'; initApp();
+        }
+      });
+    }
+
+    function initApp() {
+      const isAd = (userRole === 'admin');
+      document.getElementById('navStudentManageDesktop').style.display = isAd ? 'flex' : 'none'; 
+      document.getElementById('navStudentManageMobile').style.display = isAd ? 'flex' : 'none'; 
+      document.getElementById('navPaymentDesktop').style.display = isAd ? 'flex' : 'none'; document.getElementById('navPaymentMobile').style.display = isAd ? 'flex' : 'none'; 
+      document.getElementById('navDebtorDesktop').style.display = isAd ? 'flex' : 'none'; document.getElementById('navDebtorMobile').style.display = isAd ? 'flex' : 'none'; 
+      document.getElementById('navExpenseDesktop').style.display = isAd ? 'flex' : 'none'; document.getElementById('navExpenseMobile').style.display = isAd ? 'flex' : 'none'; 
+      const badge = document.getElementById('mobileRoleBadge');
+      badge.innerText = currentUser; badge.className = isAd ? 'badge bg-success rounded-pill' : 'badge bg-secondary rounded-pill';
+      loadDashboard(); toggleFilterInput();
+    }
+
+    function switchView(viewId) { document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active')); document.getElementById(viewId).classList.add('active'); document.querySelectorAll('[data-target]').forEach(el => el.classList.remove('active')); document.querySelectorAll(`[data-target="${viewId}"]`).forEach(el => el.classList.add('active')); document.getElementById('printContainer').style.display = 'none'; if(viewId === 'reportView') { document.getElementById('printContainer').style.display = 'block'; document.getElementById('reportPrintArea').style.display = 'block'; document.querySelector('.receipt-box').style.display = 'none'; } if(viewId === 'dashboardView') loadDashboard(); if(viewId === 'studentManageView' && userRole === 'admin') loadManageStudents(); window.scrollTo(0,0); }
+
+    let studentDataCache = []; 
+    function loadManageStudents() { const tbody = document.getElementById('manageStudentTableBody'); tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">កំពុងទាញទិន្នន័យសិស្ស... <i class="fas fa-spinner fa-spin text-info"></i></td></tr>'; google.script.run.withSuccessHandler(function(data) { studentDataCache = data; document.getElementById('totalManageStudents').innerText = data.length; renderManageStudentTable(data); }).getAllStudents(); }
+    function renderManageStudentTable(data) { const tbody = document.getElementById('manageStudentTableBody'); tbody.innerHTML = ''; if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">មិនមានទិន្នន័យសិស្សទេ</td></tr>'; } else { const reversedData = [...data].reverse(); reversedData.forEach(row => { let btnEdit = `<button type="button" class="btn btn-sm btn-outline-primary border-0 me-1" onclick="editStudentForm('${row[0]}', '${row[1]}', '${row[2]}', '${row[3]}')"><i class="fas fa-edit"></i></button>`; let btnDel = `<button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="deleteStudentForm('${row[0]}')"><i class="fas fa-trash"></i></button>`; tbody.innerHTML += `<tr><td class="fw-bold">${row[0]}</td><td>${row[1]}</td><td><span class="badge bg-light text-dark border">${row[2]}</span></td><td>${row[3]}</td><td class="text-center action-column">${btnEdit}${btnDel}</td></tr>`; }); } }
+    function filterManageStudents() { const keyword = document.getElementById('searchManageStudent').value.toLowerCase(); const filtered = studentDataCache.filter(row => row[0].toLowerCase().includes(keyword) || row[1].toLowerCase().includes(keyword)); renderManageStudentTable(filtered); }
+    
+    // បញ្ជូន currentUser ទៅជាមួយពេល Save/Delete
+    document.getElementById('studentManageForm').onsubmit = function(e) { e.preventDefault(); document.getElementById('btnSaveStudent').disabled = true; Swal.fire({title: 'កំពុងរក្សាទុក...', allowOutsideClick: false, didOpen: () => Swal.showLoading()}); const formData = { oldStuId: document.getElementById('oldStuId').value, stuId: document.getElementById('stuId').value.trim(), stuName: document.getElementById('stuName').value.trim(), stuClass: document.getElementById('stuClass').value, stuPhone: document.getElementById('stuPhone').value.trim() }; google.script.run.withSuccessHandler(function(res) { document.getElementById('btnSaveStudent').disabled = false; if(res.status === "Duplicate") return Swal.fire('ស្ទួនលេខ ID', res.message, 'warning'); if(res.status === "Error") return Swal.fire('បរាជ័យ', res.message, 'error'); resetStudentForm(); loadManageStudents(); Swal.fire({ icon: 'success', title: 'ជោគជ័យ', text: 'រក្សាទុកទិន្នន័យសិស្សរួចរាល់', timer: 1500, showConfirmButton: false }); }).withFailureHandler(function(err) { document.getElementById('btnSaveStudent').disabled = false; Swal.fire('Error', err, 'error'); }).saveStudentData(formData, currentUser); };
+    function editStudentForm(id, name, sClass, phone) { document.getElementById('oldStuId').value = id; document.getElementById('stuId').value = id; document.getElementById('stuName').value = name; let cleanClass = sClass.toString().trim(); let selectEl = document.getElementById('stuClass'); let found = false; for(let i = 0; i < selectEl.options.length; i++) { if(selectEl.options[i].value === cleanClass || selectEl.options[i].text.includes(cleanClass)) { selectEl.selectedIndex = i; found = true; break; } } if(!found && cleanClass !== "") { let newOpt = document.createElement('option'); newOpt.value = cleanClass; newOpt.text = cleanClass; selectEl.appendChild(newOpt); selectEl.value = cleanClass; } document.getElementById('stuPhone').value = (phone !== "undefined" && phone !== "null") ? phone : ""; document.getElementById('btnSaveStudent').innerHTML = '<i class="fas fa-edit"></i> កែប្រែ (Update)'; window.scrollTo(0,0); }
+    function resetStudentForm() { document.getElementById('studentManageForm').reset(); document.getElementById('oldStuId').value = ""; document.getElementById('btnSaveStudent').innerHTML = '<i class="fas fa-save"></i> រក្សាទុក'; }
+    function deleteStudentForm(id) { Swal.fire({ title: 'លុបសិស្សនេះ?', text: "អ្នកមិនអាចយកទិន្នន័យមកវិញបានទេ!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'យល់ព្រមលុប!' }).then((result) => { if (result.isConfirmed) { Swal.fire({title: 'កំពុងលុប...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(success) { if(success) { loadManageStudents(); Swal.fire('ជោគជ័យ!', 'បានលុបចេញពីប្រព័ន្ធ។', 'success'); } else { Swal.fire('បរាជ័យ', 'មានបញ្ហា។', 'error'); } }).deleteStudentData(id, currentUser); } }); }
+
+    document.getElementById('expenseForm').onsubmit = function(e) { e.preventDefault(); document.getElementById('btnSaveExpense').disabled = true; Swal.fire({title: 'កំពុងរក្សាទុកចំណាយ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()}); const formData = { expCategory: this.expCategory.value, expDesc: this.expDesc.value, expAmount: this.expAmount.value, expDate: this.expDate.value, expBy: this.expBy.value }; google.script.run.withSuccessHandler(function(res) { document.getElementById('btnSaveExpense').disabled = false; if(res.status === "Error") return Swal.fire('បរាជ័យ', res.message, 'error'); document.getElementById('expenseForm').reset(); document.getElementById('expDateInput').valueAsDate = new Date(); Swal.fire({ icon: 'success', title: 'ជោគជ័យ!', text: 'បានកត់ត្រាការចំណាយរួចរាល់។', timer: 1500, showConfirmButton: false }); }).withFailureHandler(function(error) { document.getElementById('btnSaveExpense').disabled = false; Swal.fire('មានបញ្ហា', 'កូដ Error: ' + error, 'error'); }).saveExpense(formData, currentUser); };
+    function loadDashboard() { const btnDash = document.getElementById('btnRefreshDash'); if(btnDash) btnDash.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> កំពុង Refresh...'; google.script.run.withSuccessHandler(function(stats) { document.getElementById('d-totalInc').innerText = Number(stats.totalIncome).toLocaleString('en-US') + ' ៛'; document.getElementById('d-totalExp').innerText = Number(stats.totalExpense).toLocaleString('en-US') + ' ៛'; document.getElementById('d-netBalance').innerText = Number(stats.netBalance).toLocaleString('en-US') + ' ៛'; document.getElementById('d-totStu').innerText = stats.totalStudents; document.getElementById('d-femStu').innerText = stats.femaleStudents; document.getElementById('d-full').innerText = stats.fullPaid; document.getElementById('d-disc').innerText = stats.discounted; document.getElementById('d-poor').innerText = stats.poor; document.getElementById('d-exem').innerText = stats.exempted; drawChart(stats.cashTotal, stats.qrTotal); if(btnDash) btnDash.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh'; }).getDashboardData(); }
+    function generateDebtorReport() { const year = document.getElementById('debtorYear').value; const sem = document.getElementById('debtorSem').value; const classFilter = document.getElementById('debtorClassFilter').value; const searchKeyword = document.getElementById('debtorSearch').value.trim(); const tbody = document.getElementById('debtorTableBody'); tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">កំពុងស្វែងរក... <i class="fas fa-spinner fa-spin text-warning"></i></td></tr>'; google.script.run.withSuccessHandler(function(data) { tbody.innerHTML = ''; if(data.length === 0) { tbody.innerHTML = '<tr><td colspan=\"8\" class=\"text-center text-success py-4\"><i class="fas fa-check-circle"></i> គ្មានអ្នកជំពាក់ទេ!</td></tr>'; } else { data.forEach(row => { let actionBtn = `<button class="btn btn-sm btn-primary border-0" onclick="payDebtorNow('${row[0]}', '${sem}')"><i class="fas fa-hand-holding-usd"></i> ទូទាត់</button>`; tbody.innerHTML += `<tr><td class="fw-bold">${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td><td class="text-danger fw-bold">${row[6]}</td><td class="action-column text-center">${actionBtn}</td></tr>`; }); } }).getDebtorsData(year, sem, classFilter, searchKeyword); }
+    function payDebtorNow(studentId, sem) { switchView('paymentView'); document.getElementById('studentId').value = studentId; document.getElementById('semester').value = sem; fetchStudentForPayment(); }
+    function exportDebtorsToExcel() { let table = document.getElementById("debtorTable"); let rows = table.querySelectorAll("tr"); let csv = []; for (let i = 0; i < rows.length; i++) { let row = [], cols = rows[i].querySelectorAll("td, th"); for (let j = 0; j < cols.length - 1; j++) { let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim(); data = data.replace(/"/g, '""'); row.push('"' + data + '"'); } csv.push(row.join(",")); } let csvFile = new Blob(["\uFEFF"+csv.join("\n")], {type: "text/csv;charset=utf-8;"}); let link = document.createElement("a"); link.href = URL.createObjectURL(csvFile); link.download = "Debtors_List.csv"; link.click(); }
+    
+    function searchStudentDetails() { const id = document.getElementById('detailSearchId').value.trim(); if(!id) return Swal.fire('សូមបញ្ចូល ID', '', 'warning'); Swal.fire({title: 'កំពុងស្វែងរក...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(res) { Swal.close(); if(!res || !res.found) { document.getElementById('studentProfileArea').style.display = 'none'; return Swal.fire('រកមិនឃើញទេ', '', 'error'); } document.getElementById('studentProfileArea').style.display = 'block'; document.getElementById('detName').innerText = res.student.name || "មិនស្គាល់ឈ្មោះ"; document.getElementById('detId').innerText = "ID: " + res.student.id; document.getElementById('detClass').innerText = res.student.className || "មិនមានបញ្ជាក់"; document.getElementById('detPhone').innerText = res.student.phone || "មិនមានបញ្ជាក់"; document.getElementById('detTotalPaid').innerText = Number(res.summary.totalPaid).toLocaleString('en-US') + " ៛"; document.getElementById('detBalance').innerText = Number(res.summary.balance).toLocaleString('en-US') + " ៛"; const tbody = document.getElementById('detTableBody'); tbody.innerHTML = ''; if(res.payments.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">មិនទាន់មានប្រវត្តិបង់ប្រាក់ទេ</td></tr>'; } else { res.payments.forEach(p => { let pdfBtn = p.pdfUrl ? `<a href="${p.pdfUrl}" target="_blank" class="btn btn-sm btn-outline-danger border-0 me-1" title="មើលវិក្កយបត្រ PDF"><i class="fas fa-file-pdf"></i></a>` : ''; let printBtn = `<button class="btn btn-sm btn-outline-success border-0" onclick="reprintInvoice('${p.invNo}')" title="ព្រីនវិក្កយបត្រឡើងវិញ"><i class="fas fa-print"></i></button>`; tbody.innerHTML += `<tr><td>${p.date}</td><td>${p.invNo}</td><td>${p.term}</td><td><span class="badge ${p.payMethod==='Cash'?'bg-primary':'bg-success'}">${p.payMethod}</span></td><td class="text-primary fw-bold">${Number(p.amount).toLocaleString('en-US')} ៛</td><td>${pdfBtn}${printBtn}</td></tr>`; }); } }).getStudentCompleteHistory(id); }
+
+    function fetchStudentForPayment() { const id = document.getElementById('studentId').value.trim(); const editInvNo = document.getElementById('editInvNo').value; const nameBox = document.getElementById('studentName'), classBox = document.getElementById('className'), phoneBox = document.getElementById('phone'); if(!id) return Swal.fire('សូមវាយ ID', 'សូមវាយបញ្ចូលអត្តលេខសិស្សជាមុនសិន រួចចុចស្វែងរក!', 'warning'); nameBox.value = "កំពុងទាញទិន្នន័យ..."; classBox.value = ""; phoneBox.value = ""; pPaid.value = 0; calcFinance(); Swal.fire({title: 'កំពុងស្វែងរក...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(res) { Swal.close(); if(res && !res.notFound) { nameBox.value = res.name; classBox.value = res.className; phoneBox.value = res.phone; nameBox.style.color = "black"; pPaid.value = res.previousPaid || 0; calcFinance(); } else { nameBox.value = ""; classBox.value = ""; phoneBox.value = ""; pPaid.value = 0; calcFinance(); Swal.fire('រកមិនឃើញទេ!', 'មិនមានសិស្សលេខ ID [' + id + '] នេះនៅក្នុងប្រព័ន្ធទេ។', 'error'); } }).withFailureHandler(function(err) { Swal.close(); Swal.fire('មានបញ្ហា', 'Error: ' + err, 'error'); }).getStudentInfo(id, editInvNo); }
+    document.getElementById('studentId').addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); fetchStudentForPayment(); } });
+
+    const sFee = document.getElementById('schoolFee'); const pPaid = document.getElementById('previousPaid'); const amt = document.getElementById('amount'); const bal = document.getElementById('balance'); const pStat = document.getElementById('partialStat'); const totPaid = document.getElementById('totalPaid'); const disc = document.getElementById('discount'); const cmt = document.getElementById('comment');
+    function calcFinance() { let feeVal = parseFloat(sFee.value) || 0; let prevVal = parseFloat(pPaid.value) || 0; let amtVal = parseFloat(amt.value) || 0; totPaid.value = amtVal; let balVal = feeVal - (prevVal + amtVal); if (balVal < 0) balVal = 0; bal.value = balVal; if (balVal > 0) pStat.value = "ជំពាក់ (Partial)"; else if (feeVal > 0 && balVal === 0) pStat.value = "ទូទាត់រួច (Paid in Full)"; else pStat.value = ""; }
+    sFee.addEventListener('input', calcFinance); amt.addEventListener('input', calcFinance);
+    document.getElementById('othersType').addEventListener('change', function() { if(this.value === 'សិស្សក្រីក្រ' || this.value === 'លើកលែង') { sFee.value = 0; amt.value = 0; disc.value = 0; cmt.value = 0; calcFinance(); sFee.readOnly = true; amt.readOnly = true; disc.readOnly = true; cmt.readOnly = true; } else { sFee.readOnly = false; amt.readOnly = false; disc.readOnly = false; cmt.readOnly = false; sFee.value = ''; amt.value = ''; disc.value = '0'; calcFinance(); if(cmt.value === '0') cmt.value = ''; } });
+    
+    document.getElementById('payForm').onsubmit = function(e) { e.preventDefault(); document.getElementById('btnSaveData').disabled = true; Swal.fire({title: 'កំពុងរក្សាទុក...', allowOutsideClick: false, didOpen: () => Swal.showLoading()}); const formData = { editInvNo: document.getElementById('editInvNo').value, studentId: this.studentId.value, studentName: this.studentName.value, gender: this.gender.value, className: this.className.value, phone: this.phone.value, comment: this.comment.value, academicYear: this.academicYear.value, semester: this.semester.value, payMethod: this.payMethod.value, others: this.others.value, amount: this.amount.value, discount: this.discount.value, totalPaid: this.totalPaid.value, collector: this.collector.value, schoolFee: this.schoolFee.value, balance: this.balance.value, partialStat: this.partialStat.value }; google.script.run.withSuccessHandler(function(res) { document.getElementById('r_inv').innerText = res.invoiceNo; document.getElementById('r_date').innerText = res.date; document.getElementById('r_cashier').innerText = formData.collector; document.getElementById('r_name').innerText = formData.studentName; document.getElementById('r_id').innerText = formData.studentId; document.getElementById('r_term').innerText = formData.semester + (formData.comment ? ` (${formData.comment})` : ''); document.getElementById('r_stat').innerText = formData.partialStat || "រួចរាល់"; document.getElementById('r_total').innerText = Number(formData.totalPaid).toLocaleString('en-US'); document.getElementById('btnPrintReceiptBtn').disabled = false; document.getElementById('btnSaveData').disabled = false; document.getElementById('editInvNo').value = ""; document.getElementById('btnSaveData').innerHTML = '<i class="fas fa-save"></i> រក្សាទុកទិន្នន័យ'; Swal.fire({ icon: 'success', title: 'ជោគជ័យ!', timer: 1500, showConfirmButton: false }); }).saveData(formData, currentUser); };
+    function triggerReceiptPrint() { document.getElementById('printContainer').style.display = 'block'; document.body.className = 'print-receipt'; window.print(); setTimeout(() => { document.getElementById('printContainer').style.display = 'none'; document.body.className = ''; }, 1000); }
+    function resetPaymentForm() { document.getElementById('payForm').reset(); document.getElementById('btnPrintReceiptBtn').disabled = true; document.getElementById('editInvNo').value = ""; document.getElementById('btnSaveData').innerHTML = '<i class="fas fa-save"></i> រក្សាទុកទិន្នន័យ'; pPaid.value = 0; document.getElementById('collector').value = currentUser; calcFinance(); }
+    window.reprintInvoice = function(invNo) { Swal.fire({title: 'ទាញទិន្នន័យ...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(data) { Swal.close(); if(!data) return Swal.fire('បរាជ័យ', 'រកមិនឃើញទិន្នន័យវិក្កយបត្រនេះទេ។', 'error'); document.getElementById('r_inv').innerText = data.invNo; document.getElementById('r_date').innerText = data.date; document.getElementById('r_cashier').innerText = data.collector; document.getElementById('r_name').innerText = data.studentName; document.getElementById('r_id').innerText = data.studentId; document.getElementById('r_term').innerText = data.semester + (data.comment ? ` (${data.comment})` : ''); document.getElementById('r_stat').innerText = data.partialStat || "រួចរាល់"; document.getElementById('r_total').innerText = Number(data.totalPaid).toLocaleString('en-US'); triggerReceiptPrint(); }).getRecordByInv(invNo); }
+    window.editRecord = function(invNo) { if(userRole !== 'admin') return Swal.fire('ហាមឃាត់', '', 'warning'); Swal.fire({title: 'ទាញទិន្នន័យ...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(data) { Swal.close(); if(!data) return Swal.fire('បរាជ័យ', '', 'error'); document.getElementById('editInvNo').value = data.invNo; document.getElementById('studentId').value = data.studentId; document.getElementById('studentName').value = data.studentName; document.querySelector('select[name="gender"]').value = data.gender; document.getElementById('comment').value = data.comment; document.querySelector('input[name="academicYear"]').value = data.academicYear; document.querySelector('select[name="semester"]').value = data.semester; document.querySelector('select[name="payMethod"]').value = data.payMethod; document.getElementById('othersType').value = data.others; document.getElementById('collector').value = data.collector; document.getElementById('schoolFee').value = data.schoolFee; document.getElementById('amount').value = data.amount; document.getElementById('discount').value = data.discount; fetchStudentForPayment(); document.getElementById('btnSaveData').innerHTML = '<i class="fas fa-edit"></i> កែប្រែ (Update)'; switchView('paymentView'); }).getRecordByInv(invNo); };
+    window.deleteRecord = function(invNo) { if(userRole !== 'admin') return; Swal.fire({ title: 'លុបឬទេ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'លុបវា!' }).then((result) => { if (result.isConfirmed) { Swal.fire({title: 'កំពុងលុប...', didOpen: () => Swal.showLoading()}); google.script.run.withSuccessHandler(function(success) { if(success) { Swal.fire('ជោគជ័យ!', 'បានលុប។', 'success'); generateReport(); loadDashboard(); } }).deleteRecordByInv(invNo, currentUser); } }); };
+    function drawChart(cash, qr) { const ctx = document.getElementById('incomeChart'); if(!ctx) return; if(myChart) { myChart.destroy(); } myChart = new Chart(ctx.getContext('2d'), { type: 'doughnut', data: { labels: ['សាច់ប្រាក់ (Cash)', 'កូដ (QR Code)'], datasets: [{ data: [cash, qr], backgroundColor: ['#3b82f6', '#10b981'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); }
+    function toggleFilterInput() { const type = document.getElementById('repType').value, input = document.getElementById('repFilter'); input.disabled = false; if(type === 'daily') { input.value = new Date().toLocaleDateString('en-GB'); } else if(type === 'yearly') { input.value = "2025-2026"; } else if(type === 'all') { input.disabled = true; input.value = "គ្រប់ពេលវេលា"; } else { input.disabled = true; input.value = "មិនទាមទារ"; } }
+    
+    function generateReport() { const type = document.getElementById('repType').value; const filterVal = document.getElementById('repFilter').value; const classFilter = document.getElementById('classFilter').value; const searchKeyword = document.getElementById('searchStudentReport').value.trim(); const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">កំពុងស្វែងរក... <i class="fas fa-spinner fa-spin text-primary"></i></td></tr>'; document.querySelector('.print-header').classList.remove('d-none'); document.getElementById('printReportTitle').innerText = { 'daily': 'ប្រចាំថ្ងៃ: '+filterVal, 'sem1': 'ឆមាសទី១', 'sem2': 'ឆមាសទី២', 'yearly': 'ឆ្នាំសិក្សា: '+filterVal, 'all': 'ទិន្នន័យទាំងអស់' }[type] + (classFilter !== 'All' ? ' (ថ្នាក់: ' + classFilter + ')' : ''); google.script.run.withSuccessHandler(function(data) { tbody.innerHTML = ''; let total = 0; if(data.length === 0) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">មិនមានទិន្នន័យទេ</td></tr>'; else { data.forEach(row => { let val = Number(row[5]) || 0; total += val; let pdfBtn = row[7] ? `<a href="${row[7]}" target="_blank" class="btn btn-sm btn-outline-danger border-0 me-1" title="មើល PDF"><i class="fas fa-file-pdf"></i></a>` : ''; let actionBtns = userRole === 'admin' ? `${pdfBtn}<button class="btn btn-sm btn-outline-success border-0 me-1" onclick="reprintInvoice('${row[0]}')" title="ព្រីនឡើងវិញ"><i class="fas fa-print"></i></button><button class="btn btn-sm btn-outline-primary border-0 me-1" onclick="editRecord('${row[0]}')" title="កែប្រែ"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteRecord('${row[0]}')" title="លុប"><i class="fas fa-trash"></i></button>` : `${pdfBtn}<span class="badge bg-light text-dark border"><i class="fas fa-eye"></i> View Only</span>`; tbody.innerHTML += `<tr><td>${row[0]}</td><td>${row[1]}</td><td class="fw-bold">${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td><span class="badge ${row[6]==='Cash'?'bg-primary':'bg-success'}">${row[6]}</span></td><td class="text-primary fw-bold">${val.toLocaleString('en-US')} ៛</td><td class="action-column text-center">${actionBtns}</td></tr>`; }); } document.getElementById('reportTotalTable').innerText = total.toLocaleString('en-US') + ' ៛'; }).getReportData(type, filterVal, classFilter, searchKeyword); }
+    function printReport() { document.body.className = 'print-report'; window.print(); setTimeout(() => document.body.className = '', 1000); }
+    function exportToExcel() { let table = document.getElementById("reportTable"); let rows = table.querySelectorAll("tr"); let csv = []; for (let i = 0; i < rows.length; i++) { let row = [], cols = rows[i].querySelectorAll("td, th"); for (let j = 0; j < cols.length - 1; j++) { let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim(); data = data.replace(/"/g, '""'); row.push('"' + data + '"'); } csv.push(row.join(",")); } let csvFile = new Blob(["\uFEFF"+csv.join("\n")], {type: "text/csv;charset=utf-8;"}); let link = document.createElement("a"); link.href = URL.createObjectURL(csvFile); link.download = "Report_" + new Date().getTime() + ".csv"; link.click(); }
+  </script>
+</body>
+</html>
