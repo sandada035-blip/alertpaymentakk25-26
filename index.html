@@ -308,16 +308,30 @@
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
           throw new Error("Please set APPS_SCRIPT_URL in index.html");
         }
+
         const res = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
-          // text/plain avoids CORS preflight problems with Apps Script
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: String(action), args })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: String(action), args: args || [] })
         });
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || "Apps Script error");
-        if (typeof successHandler === "function") successHandler(json.data);
-        return json.data;
+
+        const text = await res.text();
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          console.error("Non-JSON API response:", text);
+          throw new Error("API did not return JSON. Check /api/gas and GAS_URL.");
+        }
+
+        if (data && data.error) {
+          throw new Error(data.message || data.error || "Apps Script error");
+        }
+
+        if (typeof successHandler === "function") successHandler(data);
+        return data;
+
       } catch (err) {
         console.error("Apps Script API error:", err);
         if (typeof failureHandler === "function") failureHandler(err.message || String(err));
